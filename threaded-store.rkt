@@ -25,7 +25,8 @@
       (call-with-input-file votes.rktd read)
       (hash)))
 (define (write-to-file hash)
-  (copy-file votes.rktd votes.rktd.old #t)
+  (when (file-exists? votes.rktd)
+    (copy-file votes.rktd votes.rktd.old #t))
   (call-with-output-file votes.rktd
     (λ (port)
       (write hash port)
