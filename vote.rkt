@@ -56,7 +56,8 @@
                                            (list)
                                            (list `((style "color:red"))))
                                      ,(~a total-vote)))))
-     "The vote will count only if the sum is 10 and 4 is the largest amount on any one proposal.")))
+     "The vote will count only if the sum is 10 and 4 is the largest amount on any one proposal. "
+     "If you see red, then the vote does not count.")))
 
 (define (update-vote code req)
   (define new-vote
