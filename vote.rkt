@@ -40,10 +40,14 @@
            (table
             ,@(for/list ([p+id (in-list proposals+ids)])
                 (match-define (list p id) p+id)
-                `(tr (td ,p)
+                (define this-proposal-vote (hash-ref current id 0))
+                `(tr (td ,@(if (<= this-proposal-vote 4)
+                               (list)
+                               (list `((style "color:red"))))
+                         ,p)
                      (td (input ((size "40")
                                  (type "text")
-                                 (value ,(~a (hash-ref current id 0)))
+                                 (value ,(~a this-proposal-vote))
                                  (onchange "this.form.submit()")
                                  (id ,id)
                                  (name ,id))))))
@@ -52,7 +56,7 @@
                                            (list)
                                            (list `((style "color:red"))))
                                      ,(~a total-vote)))))
-     "The vote will count only if the sum is 10.")))
+     "The vote will count only if the sum is 10 and 4 is the largest amount on any one proposal.")))
 
 (define (update-vote code req)
   (define new-vote
