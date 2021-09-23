@@ -91,29 +91,3 @@
     [(binding:form? b)
      (convert (binding:form-value b))]
     [else #f]))
-
-#|
-     )))
-
-
-      (form ((action ,(build-url #f #f #f)))
-            (div
-             "Instructor"
-             (select ((name "instructor") (id "instructor") (onchange "this.form.submit()"))
-                     (option ((value "--")
-                              ,@(if instructor (list) (list `(selected "yes"))))
-                             "--")
-                     ,@(for/list ([name (in-list (all-instructions-that-teach-at-least-one-CS-class))])
-                         `(option ((value ,(~a name))
-                                   ,@(add-selected-if (equal? instructor name)))
-                                  ,(~a name))))))
-
-      (define (text-field description lab selector)
-    `(div ,@(if (list? description) description (list description)) (br)
-          (input ((size "100")
-                  (type "text")
-                  (value ,(or (selector class-status) ""))
-                  (onchange "this.form.submit()")
-                  (id ,lab) (name ,lab)))))
-
-|#
