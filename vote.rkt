@@ -39,10 +39,13 @@
 
      (br)
      
-     "You have 9 votes to cast; you must cast at least 6 of them. You may not cast more than 3 on any one proposal. "
-     "If you see any red, then your vote is not following those rules and will not count."
+     (p "You have 9 votes to cast; you must cast at least 6 of them. You may not cast more than 3 on any one proposal. "
+        "If you see any red, then your vote is not following those rules and will not count.")
 
-     (br) (br) (br)
+     (p "If you do not have strong "
+        "opinions or did not pay close enough attention to the process and proposals, please do not feel like you need to vote.")
+
+     (br) (br)
      
      (form ((action ,(build-url code)))
            (table
