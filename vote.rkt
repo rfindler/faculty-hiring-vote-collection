@@ -36,12 +36,20 @@
     (head (title "Vote for " ,code))
     (body
      (h1 "Vote for " (tt ,code))
+
+     (br)
+     
+     "You have 9 votes to cast; you must cast at least 6 of them. You may not cast more than 3 on any one proposal. "
+     "If you see any red, then your vote is not following those rules and will not count."
+
+     (br) (br) (br)
+     
      (form ((action ,(build-url code)))
            (table
             ,@(for/list ([p+id (in-list proposals+ids)])
                 (match-define (list p id) p+id)
                 (define this-proposal-vote (hash-ref current id 0))
-                `(tr (td ,@(if (<= this-proposal-vote 4)
+                `(tr (td ,@(if (<= this-proposal-vote 3)
                                (list)
                                (list `((style "color:red"))))
                          ,p)
@@ -52,12 +60,10 @@
                                  (id ,id)
                                  (name ,id))))))
 
-            (tr (td (b "Total")) (td ,@(if (= total-vote 10)
+            (tr (td (b "Total")) (td ,@(if (<= 6 total-vote 9)
                                            (list)
                                            (list `((style "color:red"))))
-                                     ,(~a total-vote)))))
-     "The vote will count only if the sum is 10 and 4 is the largest amount on any one proposal. "
-     "If you see red, then the vote does not count.")))
+                                     ,(~a total-vote))))))))
 
 (define (update-vote code req)
   (define new-vote
