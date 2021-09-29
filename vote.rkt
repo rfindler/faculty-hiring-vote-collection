@@ -37,6 +37,7 @@
       (match-define (list p id) p+id)
       (hash-ref current id 0)))
   (define constituency-choice (hash-ref current constituency))
+  (define dont-vote? (hash-ref current no-opinion))
   `(html
     (head (title "Vote for " ,code))
     (body
@@ -47,9 +48,6 @@
      (p "You have 9 votes to cast; you must cast at least 6 of them. You may not cast more than 3 on any one proposal. "
         "If you see any red, then your vote is not following those rules and will not count.")
 
-     (p "If you do not have strong "
-        "opinions or did not pay close enough attention to the process and proposals, please do not feel like you need to vote.")
-
      (br) (br)
      
      (form ((action ,(build-url code)))
@@ -57,7 +55,7 @@
             ,@(for/list ([p+id (in-list proposals+ids)])
                 (match-define (list p id) p+id)
                 (define this-proposal-vote (hash-ref current id 0))
-                `(tr (td ,@(if (<= this-proposal-vote 3)
+                `(tr (td ,@(if (or (<= this-proposal-vote 3) dont-vote?)
                                (list)
                                (list `((style "color:red"))))
                          ,p)
@@ -68,23 +66,36 @@
                                  (id ,id)
                                  (name ,id))))))
 
-            (tr (td (b "Total")) (td ,@(if (<= 6 total-vote 9)
+            (tr (td (b "Total")) (td ,@(if (or (<= 6 total-vote 9) dont-vote?)
                                            (list)
                                            (list `((style "color:red"))))
-                                     ,(~a total-vote))))
+                                     ,(~a total-vote)))
 
-           (tr (td ((colspan "2"))) (br))
+            (tr (td ((colspan "2"))) (br))
 
-           (tr (td "Area")
-               (td
-                (select ((id ,constituency) (name ,constituency) (onchange "this.form.submit()"))
-                        ,@(for/list ([area (in-list areas)])
-                            `(option ((value ,area)
-                                      ,@(if (equal? area constituency-choice)
-                                            (list `(selected "yes"))
-                                            (list)))
-                                     ,area)))))
-           ))))
+            (tr (td ((colspan "2"))
+                    (p "Area"
+                       (select ((id ,constituency) (name ,constituency) (onchange "this.form.submit()"))
+                               ,@(for/list ([area (in-list areas)])
+                                   `(option ((value ,area)
+                                             ,@(if (equal? area constituency-choice)
+                                                   (list `(selected "yes"))
+                                                   (list)))
+                                            ,area))))))
+
+            (tr (td ((colspan "2")) (br)))
+            (tr (td ((colspan "2")) (br)))
+
+            (tr (td ((colspan "2"))
+                    (p "If you do not have strong "
+                       "opinions or did not pay close enough attention to the process and proposals, please do not feel like you need to vote. "
+                       "Instead, check this checkbox:")
+                    (input ((type "checkbox") (id ,no-opinion) (name ,no-opinion) (onchange "this.form.submit()")
+                                              ,@(if dont-vote?
+                                                    (list `(checked "on"))
+                                                    (list)))
+                           (b "I won't vote; I am happy with what others decide."))))
+           )))))
 
 (define (update-vote code req)
   (define original (or (get code) (hash)))
@@ -103,11 +114,14 @@
   (unless (member constituency-choice areas)
     (printf "unknown constituency-choice: ~s\n" constituency-choice)
     (set! constituency-choice (first areas)))
-  (define with-area (hash-set new-vote constituency constituency-choice))
-  (set code with-area)
-  with-area)
+  (define no-vote (extract-binding req (string->bytes/utf-8 no-opinion)))
+  (define with-area-and-no-vote (hash-set (hash-set new-vote constituency constituency-choice)
+                              no-opinion no-vote))
+  (set code with-area-and-no-vote)
+  with-area-and-no-vote)
 
 (define constituency "constituency")
+(define no-opinion "noopinion")
 
 (define (hyphens->false-otherwise-bytes->string/utf-8 bytes)
   (cond
