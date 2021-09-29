@@ -99,7 +99,7 @@
          (hash-set table id num)]
         [else table])))
   (define constituency-choice (or (extract-binding req (string->bytes/utf-8 constituency))
-                                  (hash-ref original constituency)))
+                                  (hash-ref original constituency (first areas))))
   (unless (member constituency-choice areas)
     (printf "unknown constituency-choice: ~s\n" constituency-choice)
     (set! constituency-choice (first areas)))
