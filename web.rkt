@@ -57,7 +57,11 @@
 
 
 (module+ main
-  (require racket/runtime-path)
+  (require racket/runtime-path racket/cmdline)
+  (define port-as-string
+    (command-line #:args (port) port))
+  (define port (or (string->number port-as-string) 8532))
+  
   (define-runtime-path fonts "fonts")
   (printf "starting site\n")
   (serve/servlet dispatch-request
