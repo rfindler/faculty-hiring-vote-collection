@@ -6,6 +6,10 @@
   [votes-page
    (-> string? any/c any/c)]))
 
+(define areas
+  (cons "Prefer not to say"
+        (sort '("Systems" "Theory" "AI" "Interfaces" "Teaching-track") string<?)))
+
 (define proposals+ids
   (list (list "Bio-inspired Robotics - Brenna presenting" "bio")
         (list "Conversational AI - Ken presenting" "ai")
@@ -32,6 +36,7 @@
     (for/sum ([p+id (in-list proposals+ids)])
       (match-define (list p id) p+id)
       (hash-ref current id 0)))
+  (define constituency-choice (hash-ref current constituency))
   `(html
     (head (title "Vote for " ,code))
     (body
@@ -66,11 +71,25 @@
             (tr (td (b "Total")) (td ,@(if (<= 6 total-vote 9)
                                            (list)
                                            (list `((style "color:red"))))
-                                     ,(~a total-vote))))))))
+                                     ,(~a total-vote))))
+
+           (tr (td ((colspan "2"))) (br))
+
+           (tr (td "Area")
+               (td
+                (select ((id ,constituency) (name ,constituency) (onchange "this.form.submit()"))
+                        ,@(for/list ([area (in-list areas)])
+                            `(option ((value ,area)
+                                      ,@(if (equal? area constituency-choice)
+                                            (list `(selected "yes"))
+                                            (list)))
+                                     ,area)))))
+           ))))
 
 (define (update-vote code req)
+  (define original (or (get code) (hash)))
   (define new-vote
-    (for/fold ([table (or (get code) (hash))])
+    (for/fold ([table original])
               ([proposal+id (in-list proposals+ids)])
       (match-define (list proposal id) proposal+id)
       (define incoming (extract-binding req (string->bytes/utf-8 id)))
@@ -79,9 +98,16 @@
         [(and (exact-integer? num) (<= 0 num 10))
          (hash-set table id num)]
         [else table])))
-  (set code new-vote)
-  new-vote)
+  (define constituency-choice (or (extract-binding req (string->bytes/utf-8 constituency))
+                                  (hash-ref original constituency)))
+  (unless (member constituency-choice areas)
+    (printf "unknown constituency-choice: ~s\n" constituency-choice)
+    (set! constituency-choice (first areas)))
+  (define with-area (hash-set new-vote constituency constituency-choice))
+  (set code with-area)
+  with-area)
 
+(define constituency "constituency")
 
 (define (hyphens->false-otherwise-bytes->string/utf-8 bytes)
   (cond
