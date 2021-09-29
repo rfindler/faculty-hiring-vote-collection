@@ -57,10 +57,12 @@
 
 
 (module+ main
-  (require racket/runtime-path racket/cmdline)
+  (require racket/runtime-path racket/cmdline "ids.rkt")
   (define port-as-string
-    (command-line #:args (port) port))
+    (command-line #:args (port seed) port))
   (define port (or (string->number port-as-string) 8532))
+  (define seed (or (string->number port-as-string) 0))
+  (build-all-ids seed)
   
   (define-runtime-path fonts "fonts")
   (printf "starting site\n")
