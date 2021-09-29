@@ -25,8 +25,7 @@
     "Marcelo Worsley"
     "Maia Jacobs"
     "Jack Tumblin"
-    "Ollie Cossairt"
-    "Brent Hecht"))
+    "Ollie Cossairt"))
 
 (define systems
   '("Yan Chen"
