@@ -1,69 +1,73 @@
 #lang racket
-(provide teaching-track-faculty
-         tenure-track-faculty
-         all-faculty
-         tenure-track?
-         teaching-track?
+(provide all-faculty
+         faculty-member?
          faculty->n)
 
-(define (tenure-track? x)
-  (and (member x tenure-track-faculty) #t))
-(define (teaching-track? x)
-  (and (member x teaching-track-faculty) #t))
-
-(define tenure-track-faculty
-  '("Brenna Argall"
+(define ai
+  '("Chris Riesbeck"
+    "Kris Hammond"
     "Larry Birnbaum"
-    "Fabian Bustamante"
-    "Simone Campanoni"
-    "Yan Chen"
-    "Oliver Cossairt"
-    "Christos Dimoulas"
-    "Peter Dinda"
-    "Robby Findler"
+    "VS Subrahmanian"
     "Ken Forbus"
-    "Benjamin Golub"
-    "Kristian Hammond"
-    "Nikos Hardavellas"
-    "Jason Hartline"
-    "Brent Hecht"
-    "Josiah Hester"
-    "Michael Horn"
-    "Ian Horswill"
-    "Jessica Hullman"
-    "Maia Jacobs"
-    "Russ Joseph"
-    "Matthew Kay"
-    "Samir Khuller"
-    "Aleksandar Kuzmanovic"
-    "Annie Liang"
-    "Han Liu"
-    "Konstantin Makarychev"
-    "Gokhan Memik"
-    "Seda Memik"
-    "Eleanor O'Rourke"
     "Bryan Pardo"
-    "Chris Riesbeck"
-    "Jennie Rogers"
-    "Michael Rubenstein"
+    "Han Liu"
+    "Ian Horswill"
+    "Brenna Argall"
+    "Mike Rubenstein"))
+
+(define interfaces
+  '("Jessica Hullman"
+    "Haoqi Zhang"
+    "Matt Kay"
+    "Nell O'Rourke"
+    "Mike Horn"
+    "Uri Wilensky"
+    "Marcelo Worsley"
+    "Maia Jacobs"
     "Jack Tumblin"
+    "Ollie Cossairt"
+    "Brent Hecht"))
+
+(define systems
+  '("Yan Chen"
+    "Jennie Rogers"
+    "Nikos Hardavellas"
+    "Fabian Bustamante"
+    "Peter Dinda"
+    "Seda Memik"
+    "Gokhan Memik"
+    "Russ Joseph"
+    "Christos Dimoulas"
+    "Robby Findler"
+    "Aleksandar Kuzmanovic"
+    "Simone Campanoni"
+    "Josiah Hester"))
+ 
+(define theory
+  '("Jason Hartline"
+    "Kostya Makarychev"
+    "Samir Khuller"
     "Aravindan Vijayaraghavan"
     "Xiao Wang"
-    "Marcelo Worsley"
-    "Haoqi Zhang"
-    "Uri Wilensky"))
+    "Annie Liang"
+    "Ben Golub"))
 
-(define teaching-track-faculty
-  '("Sarah Van Wart"
-    "Sara Owsley Sood"
-    "Vincent St-Amour"
-    "Branden Ghena"
-    "Kate Compton"
+(define teaching
+  '("Huiling Hu"
+    "Connor Bain"
+    "Sara Sood"
+    "Sarah Van Wart"
     "Mohammed Alam"
-    "Huiling Hu"))
+    "Kate Compton"
+    "Branden Ghena"
+    "Vincent St-Amour"))
 
 (define all-faculty
-  (append tenure-track-faculty teaching-track-faculty))
+  (append ai
+          interfaces
+          systems
+          theory
+          teaching))
 
 (define faculty->n-hash (make-hash))
 (for ([faculty (in-list all-faculty)]
@@ -72,3 +76,5 @@
 
 (define (faculty->n faculty)
   (hash-ref faculty->n-hash faculty))
+
+(define (faculty-member? n) (and (member n all-faculty) #t))

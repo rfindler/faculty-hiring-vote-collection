@@ -4,7 +4,7 @@
 (provide
  gen-ids
  (contract-out
-  [get-id (-> (or/c tenure-track? teaching-track?) ids? string?)]))
+  [get-id (-> faculty-member? ids? string?)]))
 
 (define digits
   (list->vector
@@ -26,10 +26,4 @@
 
 (struct ids (ids))
 (define (gen-ids) (ids (apply vector (shuffle all-ids))))
-(define (get-id faculty ids)
-  (define raw-id (vector-ref (ids-ids ids) (faculty->n faculty)))
-  (cond
-    [(teaching-track? faculty)
-     (string-append "a" raw-id)]
-    [(tenure-track? faculty)
-     (string-append "z" raw-id)]))
+(define (get-id faculty ids) (vector-ref (ids-ids ids) (faculty->n faculty)))
