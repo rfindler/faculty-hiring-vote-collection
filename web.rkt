@@ -65,4 +65,4 @@
                  #:servlet-regexp servlet-regexp
                  #:extra-files-paths (list "img" fonts)
                  #:command-line? #t
-                 #:port 8888))
+                 #:port 7864))
