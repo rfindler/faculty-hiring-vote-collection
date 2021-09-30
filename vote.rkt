@@ -104,7 +104,10 @@
               ([proposal+id (in-list proposals+ids)])
       (match-define (list proposal id) proposal+id)
       (define incoming (extract-binding req (string->bytes/utf-8 id)))
-      (define num (and incoming (string->number incoming)))
+      (define num (cond
+                    [(not incoming) #f]
+                    [(equal? incoming "") 0]
+                    [else (string->number incoming)]))
       (cond
         [(and (exact-integer? num) (<= 0 num 10))
          (hash-set table id num)]
