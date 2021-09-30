@@ -7,8 +7,8 @@
    (-> string? any/c any/c)]))
 
 (define areas
-  (cons "Prefer not to say"
-        (sort '("Systems" "Theory" "AI" "Interfaces" "Teaching-track") string<?)))
+  (append (sort '("Systems" "Theory" "AI" "Interfaces" "Teaching-track") string<?)
+          (list "Prefer not to say")))
 
 (define proposals+ids
   (list (list "Bio-inspired Robotics - Brenna presenting" "bio")
@@ -76,12 +76,16 @@
             (tr (td ((colspan "2"))
                     (p "Area"
                        (select ((id ,constituency) (name ,constituency) (onchange "this.form.submit()"))
+                               (option ((value ,no-area-selected)) (p ((style "color:red")) (b ,no-area-selected)))
                                ,@(for/list ([area (in-list areas)])
                                    `(option ((value ,area)
                                              ,@(if (equal? area constituency-choice)
                                                    (list `(selected "yes"))
                                                    (list)))
-                                            ,area))))))
+                                            ,area)))
+                       ,@(if (equal? constituency-choice no-area-selected)
+                             (list `(span ((style "color:red")) "Please chose an area or explicitly choose not to"))
+                             (list)))))
 
             (tr (td ((colspan "2")) (br)))
             (tr (td ((colspan "2")) (br)))
@@ -114,7 +118,8 @@
         [else table])))
   (define constituency-choice (or (extract-binding req (string->bytes/utf-8 constituency))
                                   (hash-ref original constituency (first areas))))
-  (unless (member constituency-choice areas)
+  (unless (or (equal? constituency-choice no-area-selected)
+              (member constituency-choice areas))
     (printf "unknown constituency-choice: ~s\n" constituency-choice)
     (set! constituency-choice (first areas)))
   (define no-vote (extract-binding req (string->bytes/utf-8 no-opinion)))
@@ -124,6 +129,7 @@
   with-area-and-no-vote)
 
 (define constituency "constituency")
+(define no-area-selected "No choice yet made")
 (define no-opinion "noopinion")
 
 (define (hyphens->false-otherwise-bytes->string/utf-8 bytes)
