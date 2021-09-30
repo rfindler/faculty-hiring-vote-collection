@@ -62,6 +62,7 @@
     (command-line #:args (port seed) port))
   (define port (or (string->number port-as-string) 8532))
   (define seed (or (string->number port-as-string) 0))
+  (current-port port)
   (build-all-ids seed)
   
   (define-runtime-path fonts "fonts")

@@ -1,7 +1,9 @@
 #lang racket
 (require "ids.rkt" "faculty.rkt")
 
-(provide codes-page)
+(provide codes-page current-port)
+
+(define current-port (make-parameter #f))
 
 (define (codes-page)
   (define ids (gen-ids))
@@ -13,4 +15,6 @@
                `(tr (td ,faculty)
                     (td
                      (a ((href ,(~a "/vote/" id)))
-                        (tt ,id)))))))))
+                        (tt ,(~a "http://penghu.eecs.northwestern.edu:"
+                                 (current-port)
+                                 "/vote/" id))))))))))
