@@ -74,7 +74,7 @@
             (tr (td ((colspan "2"))) (br))
 
             (tr (td ((colspan "2"))
-                    (p "Area"
+                    (p "Your Area:"
                        (select ((id ,constituency) (name ,constituency) (onchange "this.form.submit()"))
                                (option ((value ,no-area-selected)) (p ((style "color:red")) (b ,no-area-selected)))
                                ,@(for/list ([area (in-list areas)])
