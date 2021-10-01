@@ -12,7 +12,7 @@
 
 (define proposals+ids
   (list (list "Bio-inspired Robotics - Brenna presenting" "bio")
-        (list "Conversational AI - Ken presenting" "ai")
+        (list "Collaborative AI - Ken presenting" "ai")
         (list "Critical Networked Systems - Fabian presenting" "net")
         (list "Parallel Systems - Peter presenting" "parallel")
         (list "Quantum - Nikos presenting" "quantum")
