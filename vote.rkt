@@ -16,7 +16,11 @@
         (list "Critical Networked Systems - Fabian presenting" "net")
         (list "Parallel Systems - Peter presenting" "parallel")
         (list "Quantum - Nikos presenting" "quantum")
-        (list "Vision - Mike presenting" "vision")))
+        (list "Vision - Mike presenting" "vision")
+        (list "Proposals ranked below this do not have my support" "nothanks")))
+
+(define (valid-rank? n)
+  (and (natural? n) (<= 0 n (- (length proposals+ids) 1))))
 
 (define (build-url code)
   (url->string
@@ -32,10 +36,16 @@
 
 (define (votes-page code req)
   (define current (update-vote code req))
-  (define total-vote
-    (for/sum ([p+id (in-list proposals+ids)])
-      (match-define (list p id) p+id)
-      (hash-ref current id 0)))
+  (define rank->proposals (make-hash))
+  (for ([p+id (in-list proposals+ids)])
+    (match-define (list p id) p+id)
+    (define rank (hash-ref current id #f))
+    (when rank
+      (hash-set! rank->proposals rank (cons id (hash-ref rank->proposals rank '())))))
+  (define (multiple-at-this-rank? rank)
+    ((length (hash-ref rank->proposals rank '()))
+     . >= .
+     2))
   (define constituency-choice (hash-ref current constituency))
   (define dont-vote? (hash-ref current no-opinion))
   `(html
@@ -45,8 +55,13 @@
 
      (br)
      
-     (p "You have 9 votes to cast; you must cast at least 6 of them. You may not cast more than 3 on any one proposal. "
-        "If you see any red, then your vote is not following those rules and will not count.")
+     (p "Rank order the choices below, where your top choice gets the number 0,"
+        " your next choice gets the number 1, etc.")
+
+     (p "Place the special item \""
+        ,(list-ref (last proposals+ids) 0)
+        "\" in the rank order to indicate which proposals you do not support at all."
+        " That is, if you support all proposals, put it last; if you support no proposals, put it first.")
 
      (br) (br)
      
@@ -54,22 +69,26 @@
            (table
             ,@(for/list ([p+id (in-list proposals+ids)])
                 (match-define (list p id) p+id)
-                (define this-proposal-vote (hash-ref current id 0))
-                `(tr (td ,@(if (or (<= this-proposal-vote 3) dont-vote?)
-                               (list)
-                               (list `((style "color:red"))))
+                (define this-proposal-rank (hash-ref current id #f))
+                (define invalid-reason
+                  (cond
+                    [(not this-proposal-rank) #f]
+                    [(not (valid-rank? this-proposal-rank))
+                     (format "Proposal ranks must be betweeen 0 and ~a" (- (length proposals+ids) 1))]
+                    [(multiple-at-this-rank? this-proposal-rank)
+                     (format "Multiple proposals have rank ~a" this-proposal-rank)]
+                    [else #f]))
+                `(tr (td ,@(if invalid-reason
+                               (list `((style "color:red")))
+                               (list))
                          ,p)
                      (td (input ((size "40")
                                  (type "text")
-                                 (value ,(~a this-proposal-vote))
+                                 (value ,(~a (or this-proposal-rank "")))
                                  (onchange "this.form.submit()")
                                  (id ,id)
-                                 (name ,id))))))
-
-            (tr (td (b "Total")) (td ,@(if (or (<= 6 total-vote 9) dont-vote?)
-                                           (list)
-                                           (list `((style "color:red"))))
-                                     ,(~a total-vote)))
+                                 (name ,id))))
+                     (td ,(or invalid-reason ""))))
 
             (tr (td ((colspan "2"))) (br))
 
@@ -117,7 +136,7 @@
          (hash-set table id num)]
         [else table])))
   (define constituency-choice (or (extract-binding req (string->bytes/utf-8 constituency))
-                                  (hash-ref original constituency (first areas))))
+                                  (hash-ref original constituency no-area-selected)))
   (unless (or (equal? constituency-choice no-area-selected)
               (member constituency-choice areas))
     (printf "unknown constituency-choice: ~s\n" constituency-choice)

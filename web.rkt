@@ -7,7 +7,6 @@
 (module+ test (require rackunit))
 
 (define (dispatch-request req)
-  ;(printf "req ~a\n" (url->string (request-uri req))) (pretty-write (request-bindings/raw req)); (pretty-write req)
   (cond
     [(equal? "new-codes" (extract-path-param req 0))
      (show-codes-page)]
@@ -19,16 +18,16 @@
         (head)
         (body (h1 "404"))))]))
 
-(define servlet-path "class-schedule")
 (define servlet-regexp #rx"^/(new-codes)|(vote)")
-
 
 (define (show-codes-page)
   (response/xexpr
    (codes-page)))
 
 (define (show-votes-page code bindings)
-  (response/xexpr (votes-page code bindings)))
+  (if (string? code)
+      (response/xexpr (votes-page code bindings))
+      (response/xexpr `(html (head) (body "Unknown code " ,(~a code))))))
 
 (define (extract-path-param req i)
   (define path (url-path (request-uri req)))
@@ -39,22 +38,6 @@
        [(regexp-match #rx"^-+$" pth) #f]
        [else pth])]
     [else #f]))
-
-(define (build-url instructor class status)
-  (url->string
-   (make-url "http" ;; scheme
-             #f ;; user
-             #f ;; host
-             #f ;; port
-             #t ;; absolute
-             (append
-              (list (path/param servlet-path '()))
-              (if instructor (list (path/param (~a instructor) '())) '())
-              (if class (list (path/param (~a class) '())) '()))
-             '()
-             #f)))
-
-
 
 (module+ main
   (require racket/runtime-path racket/cmdline "ids.rkt")
@@ -72,4 +55,4 @@
                  #:servlet-regexp servlet-regexp
                  #:extra-files-paths (list "img" fonts)
                  #:command-line? #t
-                 #:port 7864))
+                 #:port port))
