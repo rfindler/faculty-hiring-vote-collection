@@ -63,6 +63,8 @@
         "\" in the rank order to indicate which proposals you do not support at all."
         " That is, if you support all proposals, put it last; if you support no proposals, put it first.")
 
+     (p "If you see any red, then the vote isn't valid.")
+
      (br) (br)
      
      (form ((action ,(build-url code)))
@@ -72,7 +74,8 @@
                 (define this-proposal-rank (hash-ref current id #f))
                 (define invalid-reason
                   (cond
-                    [(not this-proposal-rank) #f]
+                    [(hash-ref current no-opinion #f) #f]
+                    [(not this-proposal-rank) "This proposal is unranked"]
                     [(not (valid-rank? this-proposal-rank))
                      (format "Proposal ranks must be betweeen 0 and ~a" (- (length proposals+ids) 1))]
                     [(multiple-at-this-rank? this-proposal-rank)
@@ -127,14 +130,11 @@
               ([proposal+id (in-list proposals+ids)])
       (match-define (list proposal id) proposal+id)
       (define incoming (extract-binding req (string->bytes/utf-8 id)))
-      (define num (cond
-                    [(not incoming) #f]
-                    [(equal? incoming "") 0]
-                    [else (string->number incoming)]))
       (cond
-        [(and (exact-integer? num) (<= 0 num 10))
-         (hash-set table id num)]
-        [else table])))
+        [(or (not incoming) (equal? incoming ""))
+         table]
+        [else
+         (hash-set table id (string->number incoming))])))
   (define constituency-choice (or (extract-binding req (string->bytes/utf-8 constituency))
                                   (hash-ref original constituency no-area-selected)))
   (unless (or (equal? constituency-choice no-area-selected)
@@ -143,7 +143,7 @@
     (set! constituency-choice (first areas)))
   (define no-vote (extract-binding req (string->bytes/utf-8 no-opinion)))
   (define with-area-and-no-vote (hash-set (hash-set new-vote constituency constituency-choice)
-                              no-opinion no-vote))
+                                          no-opinion no-vote))
   (set code with-area-and-no-vote)
   with-area-and-no-vote)
 
