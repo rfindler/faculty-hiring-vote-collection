@@ -20,7 +20,7 @@
         (list "Proposals ranked below this do not have my support" "nothanks")))
 
 (define (valid-rank? n)
-  (and (natural? n) (<= 0 n (- (length proposals+ids) 1))))
+  (and (natural? n) (<= 1 n (length proposals+ids))))
 
 (define (build-url code)
   (url->string
@@ -77,7 +77,7 @@
                     [(hash-ref current no-opinion #f) #f]
                     [(not this-proposal-rank) "This proposal is unranked"]
                     [(not (valid-rank? this-proposal-rank))
-                     (format "Proposal ranks must be betweeen 0 and ~a" (- (length proposals+ids) 1))]
+                     (format "Proposal ranks must be betweeen 1 and ~a" (length proposals+ids))]
                     [(multiple-at-this-rank? this-proposal-rank)
                      (format "Multiple proposals have rank ~a" this-proposal-rank)]
                     [else #f]))
