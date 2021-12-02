@@ -19,8 +19,7 @@
         (list "Vision - Mike presenting" "vision")
         (list "Proposals ranked below this do not have my support" "nothanks")))
 
-(define (valid-rank? n)
-  (and (natural? n) (<= 1 n (length proposals+ids))))
+(define (valid-entry? n) (and (string? n) (real? (string->number n))))
 
 (define (build-url code)
   (url->string
@@ -36,16 +35,14 @@
 
 (define (votes-page code req)
   (define current (update-vote code req))
-  (define rank->proposals (make-hash))
-  (for ([p+id (in-list proposals+ids)])
-    (match-define (list p id) p+id)
-    (define rank (hash-ref current id #f))
-    (when rank
-      (hash-set! rank->proposals rank (cons id (hash-ref rank->proposals rank '())))))
-  (define (multiple-at-this-rank? rank)
-    ((length (hash-ref rank->proposals rank '()))
-     . >= .
-     2))
+  (define normalized (make-hash))
+  (define sum (for/fold ([sum 0])
+                        ([p+id (in-list proposals+ids)])
+                (cond
+                  [sum
+                   (define n (string->number (hash-ref current (list-ref p+id 1) #f)))
+                   (and n (+ sum n))]
+                  [else #f])))
   (define constituency-choice (hash-ref current constituency))
   (define dont-vote? (hash-ref current no-opinion))
   `(html
@@ -55,13 +52,13 @@
 
      (br)
      
-     (p "Rank order the choices below, where your top choice gets the number 0,"
-        " your next choice gets the number 1, etc.")
+     (p "Indicate your preferences by putting a number (fraction and decimal notation are both okay) next to each proposal;"
+        " the larger the number the more you prefer it. The actual vote you"
+        " cast will be normalized to sum to 1.")
 
-     (p "Place the special item \""
+     (p "Give something a lower score than \""
         ,(list-ref (last proposals+ids) 0)
-        "\" in the rank order to indicate which proposals you do not support at all."
-        " That is, if you support all proposals, put it last; if you support no proposals, put it first.")
+        "\" to indicate you do not support it.")
 
      (p "If you see any red, then the vote isn't valid.")
 
@@ -71,15 +68,15 @@
            (table
             ,@(for/list ([p+id (in-list proposals+ids)])
                 (match-define (list p id) p+id)
-                (define this-proposal-rank (hash-ref current id #f))
+                (define this-proposal-score (hash-ref current id #f))
+                (define this-proposal-numeric-score
+                  (and (string? this-proposal-score)
+                       (string->number this-proposal-score)))
+
                 (define invalid-reason
                   (cond
                     [(hash-ref current no-opinion #f) #f]
-                    [(not this-proposal-rank) "This proposal is unranked"]
-                    [(not (valid-rank? this-proposal-rank))
-                     (format "Proposal ranks must be betweeen 1 and ~a" (length proposals+ids))]
-                    [(multiple-at-this-rank? this-proposal-rank)
-                     (format "Multiple proposals have rank ~a" this-proposal-rank)]
+                    [(not (valid-entry? this-proposal-score)) '("This doesn't look like a number")]
                     [else #f]))
                 `(tr (td ,@(if invalid-reason
                                (list `((style "color:red")))
@@ -87,11 +84,15 @@
                          ,p)
                      (td (input ((size "40")
                                  (type "text")
-                                 (value ,(~a (or this-proposal-rank "")))
+                                 (value ,(~a (or this-proposal-score "")))
                                  (onchange "this.form.submit()")
                                  (id ,id)
                                  (name ,id))))
-                     (td ,(or invalid-reason ""))))
+                     (td ,@(or invalid-reason
+                               (if (and sum this-proposal-numeric-score)
+                                   (list "Normalized score: "
+                                         (~r (/ this-proposal-numeric-score sum)))
+                                   '())))))
 
             (tr (td ((colspan "2"))) (br))
 
@@ -134,7 +135,7 @@
         [(or (not incoming) (equal? incoming ""))
          table]
         [else
-         (hash-set table id (string->number incoming))])))
+         (hash-set table id incoming)])))
   (define constituency-choice (or (extract-binding req (string->bytes/utf-8 constituency))
                                   (hash-ref original constituency no-area-selected)))
   (unless (or (equal? constituency-choice no-area-selected)
