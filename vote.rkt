@@ -40,7 +40,8 @@
                         ([p+id (in-list proposals+ids)])
                 (cond
                   [sum
-                   (define n (string->number (hash-ref current (list-ref p+id 1) #f)))
+                   (define ent (hash-ref current (list-ref p+id 1) #f))
+                   (define n (and (string? ent) (string->number ent)))
                    (and n (+ sum n))]
                   [else #f])))
   (define constituency-choice (hash-ref current constituency))
