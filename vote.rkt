@@ -17,7 +17,7 @@
         (list "Parallel Systems - Peter presenting" "parallel")
         (list "Quantum - Nikos presenting" "quantum")
         (list "Vision - Mike presenting" "vision")
-        (list "Proposals ranked below this do not have my support" "nothanks")))
+        (list "Proposals scored below this do not have my support" "nothanks")))
 
 (define (valid-entry? n) (and (string? n) (real? (string->number n))))
 
