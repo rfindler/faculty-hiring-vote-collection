@@ -29,7 +29,8 @@
     [(string? n)
      (define num (string->exact-number n))
      (and (real? num)
-          (exact? num))]
+          (exact? num)
+          (not (negative? num)))]
     [else #f]))
 
 (define (build-url code)
@@ -100,7 +101,7 @@
                 (define invalid-reason
                   (cond
                     [(hash-ref current no-opinion #f) #f]
-                    [(not (valid-entry? this-proposal-score)) '("This doesn't look like a number")]
+                    [(not (valid-entry? this-proposal-score)) '("This doesn't look like a nonnegative number")]
                     [(and (not (equal? id nothanks))
                           (valid-entry? nothanks-vote)
                           this-proposal-numeric-score
