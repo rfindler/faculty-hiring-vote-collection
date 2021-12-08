@@ -1,6 +1,8 @@
 #lang racket
-(require "threaded-store.rkt" net/url
-          web-server/http/request-structs)
+(require "threaded-store.rkt"
+         "ids.rkt"
+         net/url
+         web-server/http/request-structs)
 (module+ test (require rackunit))
 
 (provide
@@ -64,7 +66,6 @@
                    (define n (and (string? ent) (string->exact-number ent)))
                    (and n (+ sum n))]
                   [else #f])))
-  (define constituency-choice (hash-ref current constituency))
   (define dont-vote? (hash-ref current no-opinion))
   (define nothanks-vote (hash-ref current nothanks #f))
   `(html
@@ -129,18 +130,7 @@
             (tr (td ((colspan "2"))) (br))
 
             (tr (td ((colspan "2"))
-                    (p "Your Area:"
-                       (select ((id ,constituency) (name ,constituency) (onchange "this.form.submit()"))
-                               (option ((value ,no-area-selected)) (p ((style "color:red")) (b ,no-area-selected)))
-                               ,@(for/list ([area (in-list areas)])
-                                   `(option ((value ,area)
-                                             ,@(if (equal? area constituency-choice)
-                                                   (list `(selected "yes"))
-                                                   (list)))
-                                            ,area)))
-                       ,@(if (equal? constituency-choice no-area-selected)
-                             (list `(span ((style "color:red")) "Please chose an area or explicitly choose not to"))
-                             (list)))))
+                    (p "Your Area: " ,(~a (id->area code)))))
 
             (tr (td ((colspan "2")) (br)))
             (tr (td ((colspan "2")) (br)))
@@ -168,20 +158,11 @@
          table]
         [else
          (hash-set table id incoming)])))
-  (define constituency-choice (or (extract-binding req (string->bytes/utf-8 constituency))
-                                  (hash-ref original constituency no-area-selected)))
-  (unless (or (equal? constituency-choice no-area-selected)
-              (member constituency-choice areas))
-    (printf "unknown constituency-choice: ~s\n" constituency-choice)
-    (set! constituency-choice (first areas)))
   (define no-vote (extract-binding req (string->bytes/utf-8 no-opinion)))
-  (define with-area-and-no-vote (hash-set (hash-set new-vote constituency constituency-choice)
-                                          no-opinion no-vote))
+  (define with-area-and-no-vote (hash-set new-vote no-opinion no-vote))
   (set code with-area-and-no-vote)
   with-area-and-no-vote)
 
-(define constituency "constituency")
-(define no-area-selected "No choice yet made")
 (define no-opinion "noopinion")
 
 (define (hyphens->false-otherwise-bytes->string/utf-8 bytes)

@@ -10,7 +10,7 @@
   `(html
     (head (title "New Codes"))
     (body (table
-           ,@(for/list ([faculty (in-list all-faculty)])
+           ,@(for/list ([faculty (in-list (sort all-faculty string<?))])
                (define id (get-id faculty ids))
                `(tr (td ,faculty)
                     (td

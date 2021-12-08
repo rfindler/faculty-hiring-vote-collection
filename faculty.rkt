@@ -1,9 +1,24 @@
 #lang racket
 (provide all-faculty
          faculty-member?
-         faculty->n)
+         faculty->n
+         faculty->area-tag
+         area-tag->area)
 
-(define ai
+(define faculty->area-tag-ht (make-hash))
+(define tags '())
+(define (tag tag faculty)
+  (for ([p (in-list faculty)])
+    (hash-set! faculty->area-tag-ht p (length tags)))
+  (set! tags (append tags (list tag))))
+
+(define-syntax-rule
+  (define-faculty id more)
+  (begin
+    (define id more)
+    (tag 'id id)))
+
+(define-faculty ai
   '("Chris Riesbeck"
     "Kris Hammond"
     "Larry Birnbaum"
@@ -15,7 +30,7 @@
     "Brenna Argall"
     "Mike Rubenstein"))
 
-(define interfaces
+(define-faculty interfaces
   '("Jessica Hullman"
     "Haoqi Zhang"
     "Matt Kay"
@@ -27,7 +42,7 @@
     "Jack Tumblin"
     "Ollie Cossairt"))
 
-(define systems
+(define-faculty systems
   '("Yan Chen"
     "Jennie Rogers"
     "Nikos Hardavellas"
@@ -42,7 +57,7 @@
     "Simone Campanoni"
     "Josiah Hester"))
  
-(define theory
+(define-faculty theory
   '("Jason Hartline"
     "Kostya Makarychev"
     "Samir Khuller"
@@ -51,7 +66,7 @@
     "Annie Liang"
     "Ben Golub"))
 
-(define teaching
+(define-faculty teaching
   '("Huiling Hu"
     "Connor Bain"
     "Sara Sood"
@@ -75,5 +90,8 @@
 
 (define (faculty->n faculty)
   (hash-ref faculty->n-hash faculty))
-
+(define (faculty->area-tag faculty)
+  (hash-ref faculty->area-tag-ht faculty))
 (define (faculty-member? n) (and (member n all-faculty) #t))
+(define (area-tag->area area-tag)
+  (list-ref tags area-tag))
