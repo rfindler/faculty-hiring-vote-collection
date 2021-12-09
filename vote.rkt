@@ -137,11 +137,14 @@
                     (p "If you do not have strong "
                        "opinions or did not pay close enough attention to the process and proposals, please do not feel like you need to vote. "
                        "Instead, check this checkbox:")
-                    (input ((type "checkbox") (id ,no-opinion) (name ,no-opinion) (onchange "this.form.submit()")
+                    (input ((type "checkbox") (onchange ,(format "document.getElementById(\"~a\").value=~a; this.form.submit()"
+                                                                 no-opinion
+                                                                 (if dont-vote? "false" "true")))
                                               ,@(if dont-vote?
                                                     (list `(checked "on"))
                                                     (list)))
-                           (b "I won't vote; I am happy with what others decide."))))
+                           (b "I won't vote; I am happy with what others decide."))
+                    (input ((type "hidden") (id ,no-opinion) (name ,no-opinion) (value ,(if dont-vote? "true" "false"))))))
            )))))
 
 (define (update-vote code req)
@@ -157,11 +160,11 @@
         [else
          (hash-set table id incoming)])))
   (define no-vote (extract-binding req (string->bytes/utf-8 no-opinion)
-                                   #:not-there-value 'not-there))
+                                   #:not-there 'not-there))
   (define with-area-and-no-vote
     (if (equal? no-vote 'not-there)
         new-vote
-        (hash-set new-vote no-opinion no-vote)))
+        (hash-set new-vote no-opinion (equal? no-vote "true"))))
   (set code with-area-and-no-vote)
   with-area-and-no-vote)
 
@@ -174,9 +177,9 @@
 
 (define (extract-binding req what
                          [convert hyphens->false-otherwise-bytes->string/utf-8]
-                         #:not-there-value [not-there-vaue #f])
+                         #:not-there [not-there #f])
   (define b (bindings-assq what req))
   (cond
     [(binding:form? b)
      (convert (binding:form-value b))]
-    [else not-there-vaue]))
+    [else not-there]))
