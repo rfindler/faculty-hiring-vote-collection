@@ -27,10 +27,7 @@
 (define (valid-entry? n)
   (cond
     [(string? n)
-     (define num (string->exact-number n))
-     (and (real? num)
-          (exact? num)
-          (not (negative? num)))]
+     (string->exact-number n)]
     [else #f]))
 
 (define (build-url code)
@@ -48,7 +45,7 @@
 (define (string->exact-number ent)
   (parameterize ([read-decimal-as-inexact #f])
     (define n (string->number ent))
-    (and (exact? n) (real? n) n)))
+    (and n (exact? n) (real? n) (not (negative? n)) n)))
 (module+ test
   (check-equal? (string->exact-number "1") 1)
   (check-equal? (string->exact-number "1/2") 1/2)
