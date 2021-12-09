@@ -159,8 +159,12 @@
          table]
         [else
          (hash-set table id incoming)])))
-  (define no-vote (extract-binding req (string->bytes/utf-8 no-opinion)))
-  (define with-area-and-no-vote (hash-set new-vote no-opinion no-vote))
+  (define no-vote (extract-binding req (string->bytes/utf-8 no-opinion)
+                                   #:not-there-value 'not-there))
+  (define with-area-and-no-vote
+    (if (equal? no-vote 'not-there)
+        new-vote
+        (hash-set new-vote no-opinion no-vote)))
   (set code with-area-and-no-vote)
   with-area-and-no-vote)
 
@@ -171,9 +175,11 @@
     [(regexp-match #rx"^[-]+$" bytes) #f]
     [else (bytes->string/utf-8 bytes)]))
 
-(define (extract-binding req what [convert hyphens->false-otherwise-bytes->string/utf-8])
+(define (extract-binding req what
+                         [convert hyphens->false-otherwise-bytes->string/utf-8]
+                         #:not-there-value [not-there-vaue #f])
   (define b (bindings-assq what req))
   (cond
     [(binding:form? b)
      (convert (binding:form-value b))]
-    [else #f]))
+    [else not-there-vaue]))
