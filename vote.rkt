@@ -64,7 +64,7 @@
                    (define n (and (string? ent) (string->exact-number ent)))
                    (and n (+ sum n))]
                   [else #f])))
-  (define dont-vote? (hash-ref current no-opinion))
+  (define dont-vote? (hash-ref current no-opinion #f))
   (define nothanks-vote (hash-ref current nothanks #f))
   `(html
     (head (title "Vote for " ,code))
