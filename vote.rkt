@@ -14,15 +14,6 @@
   (append (sort '("Systems" "Theory" "AI" "Interfaces" "Teaching-track") string<?)
           (list "Prefer not to say")))
 
-(define nothanks "nothanks")
-(define proposals+ids
-  (list (list "Bio-inspired Robotics - Brenna presenting" "bio")
-        (list "Collaborative AI - Ken presenting" "ai")
-        (list "Critical Networked Systems - Fabian presenting" "net")
-        (list "Parallel Systems - Peter presenting" "parallel")
-        (list "Quantum - Nikos presenting" "quantum")
-        (list "Vision - Mike presenting" "vision")
-        (list "Proposals scored below this do not have my support" nothanks)))
 
 (define (valid-entry? n)
   (cond

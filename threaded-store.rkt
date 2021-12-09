@@ -4,11 +4,17 @@
 (provide
  (contract-out
   [get (-> string? any/c)]
+  [get-all (-> any/c)]
   [set (-> string? any/c void?)]))
 
 (define (get s)
   (define c (make-channel))
   (channel-put get-chan (cons s c))
+  (channel-get c))
+
+(define (get-all)
+  (define c (make-channel))
+  (channel-put get-chan (cons #f c))
   (channel-get c))
 
 (define (set s v)
@@ -42,7 +48,11 @@
         get-chan
         (λ (s+c)
           (match-define (cons s c) s+c)
-          (channel-put c (hash-ref (read-from-file) s #f))
+          (define table (read-from-file))
+          (channel-put c
+                       (cond
+                         [c table]
+                         [else (hash-ref table s #f)]))
           (loop)))
        (wrap-evt
         set-chan

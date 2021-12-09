@@ -5,9 +5,22 @@
 (provide
  gen-ids
  build-all-ids
+ proposals+ids
+ nothanks
  (contract-out
   [get-id (-> faculty-member? ids? string?)]
   [id->area (-> string? symbol?)]))
+
+(define nothanks "nothanks")
+
+(define proposals+ids
+  (list (list "Bio-inspired Robotics - Brenna presenting" "bio")
+        (list "Collaborative AI - Ken presenting" "ai")
+        (list "Critical Networked Systems - Fabian presenting" "net")
+        (list "Parallel Systems - Peter presenting" "parallel")
+        (list "Quantum - Nikos presenting" "quantum")
+        (list "Vision - Mike presenting" "vision")
+        (list "Proposals scored below this do not have my support" nothanks)))
 
 (define digits
   (list->vector
