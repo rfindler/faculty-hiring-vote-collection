@@ -24,10 +24,15 @@
 (define (main)
   (send-line (list* "id" "area" keys))
   (for ([id (in-list (sort (hash-keys vote) string<? #:key ~s))])
-    (send-line (list* id
-                      (id->area id)
-                      (for/list ([key (in-list keys)])
-                        (hash-ref (hash-ref vote id) key ""))))))
+    (define area (id->area id))
+    (cond
+      [area
+       (send-line (list* id
+                         area
+                         (for/list ([key (in-list keys)])
+                           (hash-ref (hash-ref vote id) key ""))))]
+      [else
+       (eprintf "discarding vote from id ~a" id)])))
 
 (module+ main
   (call-with-output-file votes.csv
@@ -35,4 +40,3 @@
       (parameterize ([current-output-port port])
         (main)))
     #:exists 'truncate))
-

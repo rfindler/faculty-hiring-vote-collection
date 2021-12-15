@@ -9,7 +9,7 @@
  nothanks
  (contract-out
   [get-id (-> faculty-member? ids? string?)]
-  [id->area (-> string? symbol?)]))
+  [id->area (-> string? (or/c #f symbol?))]))
 
 (define nothanks "nothanks")
 

@@ -94,4 +94,5 @@
   (hash-ref faculty->area-tag-ht faculty))
 (define (faculty-member? n) (and (member n all-faculty) #t))
 (define (area-tag->area area-tag)
-  (list-ref tags area-tag))
+  (and (< area-tag (length tags))
+       (list-ref tags area-tag)))
