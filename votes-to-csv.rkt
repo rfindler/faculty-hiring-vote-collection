@@ -33,5 +33,6 @@
   (call-with-output-file votes.csv
     (λ (port)
       (parameterize ([current-output-port port])
-        (main)))))
+        (main)))
+    #:exists 'truncate))
 
