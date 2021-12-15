@@ -11,7 +11,7 @@
     (unless (zero? i) (display ","))
     (define str
       (cond
-        [(number? arg) (~a arg)]
+        [(number? arg) (~r arg)]
         [(boolean? arg) (if arg "true" "false")]
         [(string? arg) arg]
         [(symbol? arg) (~a arg)]
@@ -19,18 +19,26 @@
     (display str))
   (newline))
 
-(define keys (cons "noopinion" (map second proposals+ids)))
+(define keys (map second proposals+ids))
+
+(define (to-boolean x)
+  (match x
+    ["on" #t]
+    [#t x]
+    [#f x]))
 
 (define (main)
-  (send-line (list* "id" "area" keys))
+  (send-line (list* "id" "area" "noopinion" keys))
   (for ([id (in-list (sort (hash-keys vote) string<? #:key ~s))])
     (define area (id->area id))
     (cond
       [area
+       (define this-vote (hash-ref vote id))
        (send-line (list* id
                          area
+                         (to-boolean (hash-ref this-vote "noopinion" #f))
                          (for/list ([key (in-list keys)])
-                           (hash-ref (hash-ref vote id) key ""))))]
+                           (hash-ref this-vote key ""))))]
       [else
        (eprintf "discarding vote from id ~a" id)])))
 
